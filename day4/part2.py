@@ -1,22 +1,25 @@
 #!/usr/bin/env python
 
 import sys
+from dataclasses import dataclass
+
+
+@dataclass
+class Section:
+    start: int
+    stop: int
+
+    def overlaps(self, other):
+        return self.start <= other.stop and self.stop >= other.start
 
 
 def main():
-    backpacks = parse(sys.argv[1])
+    pairs = parse(sys.argv[1])
     score = 0
-    for gix in range(0, len(backpacks), 3):
-        common_item = (backpacks[gix] & backpacks[gix + 1] & backpacks[gix + 2]).pop()
-        score += prio(common_item)
+    for a, b in pairs:
+        if a.overlaps(b):
+            score += 1
     print(f"Final score: {score}")
-
-
-def prio(c):
-    if c.islower():
-        return ord(c) - 96
-    else:
-        return ord(c) - 38
 
 
 def parse(file: str):
@@ -24,8 +27,11 @@ def parse(file: str):
         res = []
         for line in fin:
             line = line.strip()
-            items = [e for e in line]
-            res.append(set(items))
+            sections = []
+            for s in line.split(","):
+                [start, stop] = s.split("-")
+                sections.append(Section(int(start), int(stop)))
+            res.append(sections)
     return res
 
 
